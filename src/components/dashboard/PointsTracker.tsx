@@ -1,5 +1,6 @@
 import { DashboardCard } from "./DashboardCard";
 import { Progress } from "@/components/ui/progress";
+import { CircularProgress } from "./CircularProgress";
 import { Trophy, Star } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 
@@ -25,6 +26,12 @@ interface FoodItem {
   isJunk?: boolean;
 }
 
+interface StudySessionConfig {
+  sessionCount: number;
+  sessionDuration: number;
+  pointsPerSession: number;
+}
+
 export function PointsTracker() {
   // Get data from localStorage
   const [wokeUp3AM] = useLocalStorage('wokeUp3AM', false);
@@ -36,6 +43,11 @@ export function PointsTracker() {
   const [bedtime] = useLocalStorage('bedtime', '');
   const [wakeupTime] = useLocalStorage('wakeupTime', '');
   const [junkFoodItems] = useLocalStorage<FoodItem[]>('junkFoodItems', []);
+  const [studyConfig] = useLocalStorage<StudySessionConfig>('studyConfig', {
+    sessionCount: 3,
+    sessionDuration: 80,
+    pointsPerSession: 8
+  });
 
   // Calculate points
   let totalPoints = 0;
@@ -53,10 +65,10 @@ export function PointsTracker() {
     pointsBreakdown.push({ task: "Morning salad", points: 5 });
   }
 
-  // Study sessions (8 points each)
+  // Study sessions (configurable points per session)
   const allSessions = [...dayStudySessions, ...afterStudySessions, ...nightStudySessions];
   const completedSessions = allSessions.filter(session => session.completed);
-  const sessionPoints = completedSessions.length * 8;
+  const sessionPoints = completedSessions.length * studyConfig.pointsPerSession;
   totalPoints += sessionPoints;
   if (sessionPoints > 0) {
     pointsBreakdown.push({ task: `${completedSessions.length} study sessions`, points: sessionPoints });
@@ -109,19 +121,31 @@ export function PointsTracker() {
       completed={totalPoints >= 80}
     >
       <div className="space-y-4">
-        {/* Points Progress */}
-        <div className="text-center">
-          <div className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            {totalPoints}/{maxPoints}
-          </div>
-          <div className={`text-lg font-medium ${ratingColor} flex items-center justify-center gap-2`}>
-            <span>{ratingIcon}</span>
-            {rating}
-          </div>
+        {/* Circular Progress Display */}
+        <div className="flex items-center justify-center mb-4">
+          <CircularProgress 
+            value={totalPoints} 
+            max={maxPoints}
+            size={160}
+            strokeWidth={12}
+          >
+            <div className="text-center">
+              <div className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                {totalPoints}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                /{maxPoints}
+              </div>
+              <div className={`text-xs font-medium ${ratingColor} flex items-center justify-center gap-1 mt-1`}>
+                <span>{ratingIcon}</span>
+                {rating}
+              </div>
+            </div>
+          </CircularProgress>
         </div>
 
-        {/* Progress Bar */}
-        <Progress value={progressPercentage} className="h-3" />
+        {/* Linear Progress Bar */}
+        <Progress value={progressPercentage} className="h-2" />
 
         {/* Points Breakdown */}
         <div className="space-y-2">

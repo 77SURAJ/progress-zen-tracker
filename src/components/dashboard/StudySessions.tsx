@@ -7,6 +7,12 @@ import { BookOpen, Play, Square } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { cn } from "@/lib/utils";
 
+interface StudySessionConfig {
+  sessionCount: number;
+  sessionDuration: number;
+  pointsPerSession: number;
+}
+
 interface StudySession {
   id: string;
   completed: boolean;
@@ -22,8 +28,18 @@ interface StudySessionsProps {
 }
 
 export function StudySessions({ title, sessionCount, storageKey }: StudySessionsProps) {
+  const [studyConfig] = useLocalStorage<StudySessionConfig>('studyConfig', {
+    sessionCount: 3,
+    sessionDuration: 80,
+    pointsPerSession: 8
+  });
+  
+  // Use configured session count and duration
+  const actualSessionCount = sessionCount || studyConfig.sessionCount;
+  const sessionDuration = studyConfig.sessionDuration;
+  
   const [sessions, setSessions] = useLocalStorage<StudySession[]>(storageKey, 
-    Array.from({ length: sessionCount }, (_, i) => ({
+    Array.from({ length: actualSessionCount }, (_, i) => ({
       id: `${storageKey}-${i}`,
       completed: false,
       isActive: false
@@ -32,6 +48,18 @@ export function StudySessions({ title, sessionCount, storageKey }: StudySessions
 
   const completedSessions = sessions.filter(s => s.completed).length;
   const activeSessions = sessions.filter(s => s.isActive).length;
+  
+  // Ensure sessions array matches the configured count
+  if (sessions.length !== actualSessionCount) {
+    const updatedSessions = Array.from({ length: actualSessionCount }, (_, i) => 
+      sessions[i] || {
+        id: `${storageKey}-${i}`,
+        completed: false,
+        isActive: false
+      }
+    );
+    setSessions(updatedSessions);
+  }
 
   const toggleSession = (id: string) => {
     setSessions(sessions.map(session => 
@@ -66,15 +94,15 @@ export function StudySessions({ title, sessionCount, storageKey }: StudySessions
     <DashboardCard
       title={title}
       icon={<BookOpen className="h-5 w-5 text-info" />}
-      completed={completedSessions === sessionCount}
+      completed={completedSessions === actualSessionCount}
     >
       <div className="space-y-4">
         <div className="space-y-2">
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>Progress</span>
-            <span>{completedSessions}/{sessionCount} sessions</span>
+            <span>{completedSessions}/{actualSessionCount} sessions</span>
           </div>
-          <ProgressBar value={completedSessions} max={sessionCount} />
+          <ProgressBar value={completedSessions} max={actualSessionCount} />
         </div>
 
         <div className="space-y-3">
@@ -92,7 +120,7 @@ export function StudySessions({ title, sessionCount, storageKey }: StudySessions
                     onCheckedChange={() => toggleSession(session.id)}
                     disabled={session.isActive}
                   />
-                  <span className="font-medium">Session {index + 1} (80 min)</span>
+                  <span className="font-medium">Session {index + 1} ({sessionDuration} min)</span>
                   {session.isActive && (
                     <span className="text-warning text-sm animate-bounce-subtle">
                       Active

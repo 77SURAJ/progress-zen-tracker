@@ -9,6 +9,7 @@ import { Sleep } from "@/components/dashboard/Sleep";
 import { JunkFood } from "@/components/dashboard/JunkFood";
 import { PointsTracker } from "@/components/dashboard/PointsTracker";
 import { WeeklySummary } from "@/components/dashboard/WeeklySummary";
+import { AIPointSystem } from "@/components/dashboard/AIPointSystem";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Calendar, BarChart3, Target } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -21,11 +22,22 @@ interface FoodItem {
   isJunk?: boolean;
 }
 
+interface StudySessionConfig {
+  sessionCount: number;
+  sessionDuration: number;
+  pointsPerSession: number;
+}
+
 const Index = () => {
   const [currentView, setCurrentView] = useState<'daily' | 'weekly'>('daily');
   const [breakfastItems, setBreakfastItems] = useLocalStorage<FoodItem[]>('breakfastItems', []);
   const [snackItems, setSnackItems] = useLocalStorage<FoodItem[]>('snackItems', []);
   const [dinnerItems, setDinnerItems] = useLocalStorage<FoodItem[]>('dinnerItems', []);
+  const [studyConfig] = useLocalStorage<StudySessionConfig>('studyConfig', {
+    sessionCount: 3,
+    sessionDuration: 80,
+    pointsPerSession: 8
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -85,7 +97,7 @@ const Index = () => {
             {/* Study Sessions (Day) */}
             <StudySessions 
               title="Study Sessions (Day)"
-              sessionCount={3}
+              sessionCount={studyConfig.sessionCount}
               storageKey="dayStudySessions"
             />
 
@@ -109,7 +121,7 @@ const Index = () => {
             {/* After Noon Study Sessions */}
             <StudySessions 
               title="After Noon Study Session"
-              sessionCount={3}
+              sessionCount={studyConfig.sessionCount}
               storageKey="afterStudySessions"
             />
 
@@ -141,6 +153,11 @@ const Index = () => {
 
             {/* Sleep */}
             <Sleep />
+            
+            {/* AI Point System */}
+            <div className="md:col-span-2 lg:col-span-1">
+              <AIPointSystem />
+            </div>
           </div>
         ) : (
           <WeeklySummary />

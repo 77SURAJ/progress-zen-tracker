@@ -1,4 +1,5 @@
 import { DashboardCard } from "./DashboardCard";
+import { SettingsModal } from "./SettingsModal";
 import { Checkbox } from "@/components/ui/checkbox";
 import { GraduationCap } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -7,6 +8,11 @@ interface ClassItem {
   id: string;
   name: string;
   attended: boolean;
+}
+
+interface Subject {
+  id: string;
+  name: string;
 }
 
 const defaultClasses: ClassItem[] = [
@@ -23,15 +29,28 @@ const defaultClasses: ClassItem[] = [
 
 export function Classes() {
   const [classes, setClasses] = useLocalStorage<ClassItem[]>('classes', defaultClasses);
+  const [customSubjects] = useLocalStorage<Subject[]>('customSubjects', []);
+  
+  // Use custom subjects if available, otherwise use default classes
+  const currentSubjects = customSubjects.length > 0 
+    ? customSubjects.map(subject => ({
+        id: subject.id,
+        name: subject.name,
+        attended: classes.find(c => c.name === subject.name)?.attended || false
+      }))
+    : classes;
 
   const toggleAttendance = (id: string) => {
-    setClasses(classes.map(cls => 
-      cls.id === id ? { ...cls, attended: !cls.attended } : cls
-    ));
+    const updatedClasses = currentSubjects.map(classItem => 
+      classItem.id === id 
+        ? { ...classItem, attended: !classItem.attended }
+        : classItem
+    );
+    setClasses(updatedClasses);
   };
 
-  const attendedCount = classes.filter(cls => cls.attended).length;
-  const isCompleted = attendedCount === classes.length;
+  const attendedCount = currentSubjects.filter(cls => cls.attended).length;
+  const isCompleted = attendedCount === currentSubjects.length;
 
   return (
     <DashboardCard
@@ -40,11 +59,14 @@ export function Classes() {
       completed={isCompleted}
     >
       <div className="space-y-3">
-        <div className="text-sm text-muted-foreground">
-          Attended: {attendedCount}/{classes.length} classes
+        <div className="flex justify-between items-center">
+          <div className="text-sm text-muted-foreground">
+            Attended: {attendedCount}/{currentSubjects.length} classes
+          </div>
+          <SettingsModal />
         </div>
         
-        {classes.map((classItem) => (
+        {currentSubjects.map((classItem) => (
           <div key={classItem.id} className="flex items-center space-x-2">
             <Checkbox
               checked={classItem.attended}
