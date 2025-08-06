@@ -10,11 +10,15 @@ interface ClassItem {
 }
 
 const defaultClasses: ClassItem[] = [
-  { id: 'math', name: 'Mathematics', attended: false },
-  { id: 'physics', name: 'Physics', attended: false },
-  { id: 'chemistry', name: 'Chemistry', attended: false },
-  { id: 'english', name: 'English', attended: false },
-  { id: 'history', name: 'History', attended: false },
+  { id: 'applied-math', name: 'Applied Mathematics', attended: false },
+  { id: 'applied-physics', name: 'Applied Physics', attended: false },
+  { id: 'beee', name: 'BEEE', attended: false },
+  { id: 'pps', name: 'PPS', attended: false },
+  { id: 'evs', name: 'EVS', attended: false },
+  { id: 'physics-lab', name: 'Applied Physics Laboratory', attended: false },
+  { id: 'pps-lab', name: 'PPS Lab', attended: false },
+  { id: 'etw', name: 'ETW', attended: false },
+  { id: 'egd', name: 'EGD', attended: false },
 ];
 
 export function Classes() {

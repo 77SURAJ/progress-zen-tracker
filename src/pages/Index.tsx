@@ -6,6 +6,8 @@ import { StudySessions } from "@/components/dashboard/StudySessions";
 import { Classes } from "@/components/dashboard/Classes";
 import { Exercise } from "@/components/dashboard/Exercise";
 import { Sleep } from "@/components/dashboard/Sleep";
+import { JunkFood } from "@/components/dashboard/JunkFood";
+import { PointsTracker } from "@/components/dashboard/PointsTracker";
 import { WeeklySummary } from "@/components/dashboard/WeeklySummary";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Calendar, BarChart3, Target } from "lucide-react";
@@ -59,6 +61,11 @@ const Index = () => {
 
         {currentView === 'daily' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Points Tracker - Featured at top */}
+            <div className="md:col-span-2 lg:col-span-3">
+              <PointsTracker />
+            </div>
+
             {/* Morning Routine */}
             <MorningRoutine />
 
@@ -75,7 +82,7 @@ const Index = () => {
               />
             </DashboardCard>
 
-            {/* Study Sessions */}
+            {/* Study Sessions (Day) */}
             <StudySessions 
               title="Study Sessions (Day)"
               sessionCount={3}
@@ -99,8 +106,18 @@ const Index = () => {
               />
             </DashboardCard>
 
+            {/* After Study Sessions */}
+            <StudySessions 
+              title="After Study Sessions"
+              sessionCount={3}
+              storageKey="afterStudySessions"
+            />
+
             {/* Exercise */}
             <Exercise />
+
+            {/* Junk Food Tracking */}
+            <JunkFood />
 
             {/* Dinner */}
             <DashboardCard
