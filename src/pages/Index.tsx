@@ -106,9 +106,9 @@ const Index = () => {
               />
             </DashboardCard>
 
-            {/* After Study Sessions */}
+            {/* After Noon Study Sessions */}
             <StudySessions 
-              title="After Study Sessions"
+              title="After Noon Study Session"
               sessionCount={3}
               storageKey="afterStudySessions"
             />
