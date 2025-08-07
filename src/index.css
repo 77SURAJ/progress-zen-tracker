@@ -119,3 +119,74 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* hAtom microformat styling */
+@layer components {
+  .hatom {
+    @apply relative;
+  }
+  
+  .hatom-field {
+    @apply transition-all duration-200;
+  }
+  
+  .hatom-field:focus {
+    @apply ring-2 ring-primary/20 border-primary/50;
+  }
+  
+  .progress-entry-3d {
+    @apply relative overflow-hidden;
+    perspective: 1000px;
+  }
+  
+  .progress-entry-3d::before {
+    @apply absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none;
+    content: '';
+    border-radius: inherit;
+  }
+  
+  /* Card flip animation */
+  .card-flip {
+    @apply transition-transform duration-700;
+    transform-style: preserve-3d;
+  }
+  
+  .card-flip:hover {
+    transform: rotateY(10deg) rotateX(5deg);
+  }
+  
+  /* Floating animations */
+  .float-gentle {
+    animation: float-gentle 3s ease-in-out infinite;
+  }
+  
+  @keyframes float-gentle {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  /* Progress ring animations */
+  .progress-ring {
+    transform-origin: center;
+    animation: rotate-slow 20s linear infinite;
+  }
+  
+  @keyframes rotate-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  /* 3D button effects */
+  .btn-3d {
+    transform-style: preserve-3d;
+    transition: transform 0.2s ease;
+  }
+  
+  .btn-3d:hover {
+    transform: translateZ(4px);
+  }
+  
+  .btn-3d:active {
+    transform: translateZ(2px);
+  }
+}
