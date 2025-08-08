@@ -76,7 +76,11 @@ export function HeroSection() {
     >
       {/* Background 3D Scene */}
       <div className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
+        <Canvas 
+          camera={{ position: [0, 0, 5], fov: 75 }}
+          gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
+          onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
+        >
           <ambientLight intensity={0.5} />
           <pointLight position={[10, 10, 10]} intensity={1} />
           <directionalLight position={[5, 5, 5]} intensity={0.5} />
