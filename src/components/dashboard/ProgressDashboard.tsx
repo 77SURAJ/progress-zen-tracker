@@ -8,6 +8,8 @@ import { ProgressEntryForm } from './ProgressEntryForm';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, Filter } from 'lucide-react';
+import { ProgressSphere } from './ProgressSphere';
+import { ParticlesCelebration } from './ParticlesCelebration';
 
 interface ProgressEntry {
   id: string;
@@ -27,6 +29,8 @@ export function ProgressDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [average, setAverage] = useState(0);
+  const [celebrate, setCelebrate] = useState(false);
   const { user } = useAuth();
 
   const fetchEntries = async () => {
@@ -69,7 +73,30 @@ export function ProgressDashboard() {
     setFilteredEntries(filtered);
   }, [entries, filterCategory, filterStatus]);
 
-  const categories = Array.from(new Set(entries.map(entry => entry.category)));
+useEffect(() => {
+  if (entries.length === 0) { setAverage(0); return; }
+  const avg = entries.reduce((sum, e) => sum + (e.progress_percentage || 0), 0) / entries.length;
+  setAverage(avg);
+}, [entries]);
+
+useEffect(() => {
+  if (!user) return;
+  const channel = supabase
+    .channel('progress_entries-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'progress_entries', filter: `user_id=eq.${user.id}` }, (payload) => {
+      // @ts-ignore
+      const row = (payload.new as any) || (payload.old as any);
+      if (!row) return;
+      const p = row.progress_percentage ?? 0;
+      const completed = row.completed ?? false;
+      if (completed || p >= 80) setCelebrate(true);
+    })
+    .subscribe();
+
+  return () => { supabase.removeChannel(channel); };
+}, [user]);
+
+const categories = Array.from(new Set(entries.map(entry => entry.category)));
 
   return (
     <section 
@@ -118,6 +145,21 @@ export function ProgressDashboard() {
           </Select>
         </div>
       </div>
+      {/* Progress Overview */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+      >
+        <ProgressSphere value={average} />
+        <div className="rounded-xl border border-border p-6 bg-card/40">
+          <h3 className="text-lg font-semibold mb-2">Live Animations</h3>
+          <p className="text-muted-foreground text-sm">
+            Achievements will trigger celebratory particles automatically.
+          </p>
+        </div>
+      </motion.div>
 
       {/* Progress Grid */}
       {loading ? (
@@ -207,6 +249,8 @@ export function ProgressDashboard() {
         onOpenChange={setShowForm}
         onSuccess={fetchEntries}
       />
+
+      <ParticlesCelebration active={celebrate} onComplete={() => setCelebrate(false)} />
     </section>
   );
 }
