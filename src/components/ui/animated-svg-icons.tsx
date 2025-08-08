@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
-import { DivideIcon as LucideIcon } from "lucide-react";
+import { motion, easeInOut } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
 
 interface AnimatedIconProps {
   icon: LucideIcon;
@@ -21,7 +21,7 @@ export function AnimatedIcon({
         duration: 2,
         repeat: Infinity,
         delay,
-        ease: "easeInOut"
+        ease: easeInOut
       }
     },
     rotate: {
@@ -30,7 +30,7 @@ export function AnimatedIcon({
         duration: 3,
         repeat: Infinity,
         delay,
-        ease: "linear"
+        ease: (t) => t
       }
     },
     pulse: {
@@ -39,7 +39,7 @@ export function AnimatedIcon({
         duration: 2,
         repeat: Infinity,
         delay,
-        ease: "easeInOut"
+        ease: easeInOut
       }
     },
     scale: {
@@ -48,7 +48,7 @@ export function AnimatedIcon({
         duration: 1.5,
         repeat: Infinity,
         delay,
-        ease: "easeInOut"
+        ease: easeInOut
       }
     },
     float: {
@@ -58,7 +58,7 @@ export function AnimatedIcon({
         duration: 3,
         repeat: Infinity,
         delay,
-        ease: "easeInOut"
+        ease: easeInOut
       }
     }
   };
@@ -86,7 +86,7 @@ export function AnimatedSVG({ children, className = "", delay = 0 }: AnimatedSVG
       className={className}
       initial={{ pathLength: 0, opacity: 0 }}
       animate={{ pathLength: 1, opacity: 1 }}
-      transition={{ duration: 2, delay, ease: "easeInOut" }}
+      transition={{ duration: 2, delay, ease: easeInOut }}
     >
       {children}
     </motion.svg>
@@ -115,7 +115,7 @@ export function FloatingParticles() {
             duration: Math.random() * 10 + 10,
             repeat: Infinity,
             delay: Math.random() * 5,
-            ease: "linear",
+            ease: (t) => t,
           }}
         />
       ))}
