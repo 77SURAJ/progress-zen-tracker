@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect, useState, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, Sphere, MeshDistortMaterial } from "@react-three/drei";
 import { motion, useInView } from "framer-motion";
@@ -59,18 +59,25 @@ function AnimatedBackground() {
 export function CTASection() {
   const sectionRef = useRef<HTMLElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => setIsClient(true), []);
+
 
   return (
     <section ref={sectionRef} className="py-24 relative overflow-hidden">
       {/* Background 3D Scene */}
       <div className="absolute inset-0 opacity-30">
-        <Canvas camera={{ position: [0, 0, 5] }}>
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} intensity={1} />
-          <directionalLight position={[5, 5, 5]} intensity={0.5} />
-          
-          <AnimatedBackground />
-        </Canvas>
+        {isClient && (
+          <Canvas camera={{ position: [0, 0, 5] }}>
+            <Suspense fallback={null}>
+              <ambientLight intensity={0.5} />
+              <pointLight position={[10, 10, 10]} intensity={1} />
+              <directionalLight position={[5, 5, 5]} intensity={0.5} />
+              
+              <AnimatedBackground />
+            </Suspense>
+          </Canvas>
+        )}
       </div>
 
       {/* Gradient Overlay */}

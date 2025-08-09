@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Float, Environment, ContactShadows } from "@react-three/drei";
 import { motion, useInView } from "framer-motion";
@@ -49,6 +49,8 @@ function ProductModel({ modelPath, scale = 1, position = [0, 0, 0] }: {
 function InteractiveScene({ activeTab }: { activeTab: string }) {
   const [isRotating, setIsRotating] = useState(true);
   const controlsRef = useRef<any>(null);
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => setIsClient(true), []);
 
   const resetCamera = () => {
     if (controlsRef.current) {
@@ -58,42 +60,47 @@ function InteractiveScene({ activeTab }: { activeTab: string }) {
 
   return (
     <div className="relative h-96 bg-gradient-to-br from-background to-primary/5 rounded-2xl overflow-hidden">
-      <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
-        <Environment preset="studio" />
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1} />
-        
-        {activeTab === "mobile" && (
-          <ProductModel modelPath="/models/phone.gltf" scale={1} position={[0, 0, 0]} />
-        )}
-        {activeTab === "desktop" && (
-          <ProductModel modelPath="/models/laptop.gltf" scale={1.2} position={[0, -0.5, 0]} />
-        )}
-        {activeTab === "analytics" && (
-          <group>
-            <ProductModel modelPath="/models/tablet.gltf" scale={0.8} position={[-1, 0, 0]} />
-            <ProductModel modelPath="/models/phone.gltf" scale={0.6} position={[1, 0, 0]} />
-          </group>
-        )}
-        
-        <ContactShadows
-          position={[0, -2, 0]}
-          opacity={0.4}
-          scale={10}
-          blur={2}
-          far={4}
-        />
-        
-        <OrbitControls
-          ref={controlsRef}
-          enablePan={false}
-          enableZoom={true}
-          autoRotate={isRotating}
-          autoRotateSpeed={2}
-          maxPolarAngle={Math.PI / 2}
-          minPolarAngle={Math.PI / 4}
-        />
-      </Canvas>
+      {isClient && (
+        <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
+          <Suspense fallback={null}>
+            <Environment preset="studio" />
+            <ambientLight intensity={0.5} />
+            <directionalLight position={[10, 10, 5]} intensity={1} />
+            
+            {activeTab === "mobile" && (
+              <ProductModel modelPath="/models/phone.gltf" scale={1} position={[0, 0, 0]} />
+            )}
+            {activeTab === "desktop" && (
+              <ProductModel modelPath="/models/laptop.gltf" scale={1.2} position={[0, -0.5, 0]} />
+            )}
+            {activeTab === "analytics" && (
+              <group>
+                <ProductModel modelPath="/models/tablet.gltf" scale={0.8} position={[-1, 0, 0]} />
+                <ProductModel modelPath="/models/phone.gltf" scale={0.6} position={[1, 0, 0]} />
+              </group>
+            )}
+            
+            <ContactShadows
+              position={[0, -2, 0]}
+              opacity={0.4}
+              scale={10}
+              blur={2}
+              far={4}
+            />
+            
+            <OrbitControls
+              ref={controlsRef}
+              enablePan={false}
+              enableZoom={true}
+              autoRotate={isRotating}
+              autoRotateSpeed={2}
+              maxPolarAngle={Math.PI / 2}
+              minPolarAngle={Math.PI / 4}
+            />
+          </Suspense>
+        </Canvas>
+      )}
+
       
       {/* Controls */}
       <div className="absolute top-4 right-4 flex gap-2">

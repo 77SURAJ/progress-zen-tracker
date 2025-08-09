@@ -9,7 +9,7 @@ import { CTASection } from "@/components/marketing/CTASection";
 import { Footer } from "@/components/marketing/Footer";
 import { Navigation } from "@/components/marketing/Navigation";
 import { ScrollProgress } from "@/components/marketing/ScrollProgress";
-
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 const Index = () => {
   const { scrollYProgress } = useScroll();
   const [isLoaded, setIsLoaded] = useState(false);
@@ -28,12 +28,12 @@ const Index = () => {
         animate={{ opacity: isLoaded ? 1 : 0 }}
         transition={{ duration: 1 }}
       >
-        <HeroSection />
-        <FeaturesSection />
-        <ProductShowcase />
-        <TestimonialsSection />
-        <PricingSection />
-        <CTASection />
+        <ErrorBoundary><HeroSection /></ErrorBoundary>
+        <ErrorBoundary><FeaturesSection /></ErrorBoundary>
+        <ErrorBoundary><ProductShowcase /></ErrorBoundary>
+        <ErrorBoundary><TestimonialsSection /></ErrorBoundary>
+        <ErrorBoundary><PricingSection /></ErrorBoundary>
+        <ErrorBoundary><CTASection /></ErrorBoundary>
       </motion.main>
       
       <Footer />

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect, useState, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, Text3D, Center } from "@react-three/drei";
 import { motion, useInView } from "framer-motion";
@@ -23,7 +23,7 @@ function Feature3D({ icon, position }: { icon: string; position: [number, number
         </mesh>
         <Center>
           <Text3D
-            font="/fonts/helvetiker_regular.typeface.json"
+            font="https://unpkg.com/three@0.179.1/examples/fonts/helvetiker_regular.typeface.json"
             size={0.2}
             height={0.05}
             position={[0, 0, 0.5]}
@@ -79,20 +79,26 @@ const features = [
 export function FeaturesSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => setIsClient(true), []);
 
   return (
     <section ref={sectionRef} id="features" className="py-24 relative overflow-hidden">
       {/* Background 3D Scene */}
       <div className="absolute inset-0 opacity-20">
-        <Canvas camera={{ position: [0, 0, 8] }}>
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} />
-          
-          <Feature3D icon="🧠" position={[-3, 2, 0]} />
-          <Feature3D icon="🎯" position={[3, -1, 0]} />
-          <Feature3D icon="📊" position={[-2, -2, 0]} />
-          <Feature3D icon="⚡" position={[2, 2, 0]} />
-        </Canvas>
+        {isClient && (
+          <Canvas camera={{ position: [0, 0, 8] }}>
+            <Suspense fallback={null}>
+              <ambientLight intensity={0.5} />
+              <pointLight position={[10, 10, 10]} />
+              
+              <Feature3D icon="🧠" position={[-3, 2, 0]} />
+              <Feature3D icon="🎯" position={[3, -1, 0]} />
+              <Feature3D icon="📊" position={[-2, -2, 0]} />
+              <Feature3D icon="⚡" position={[2, 2, 0]} />
+            </Suspense>
+          </Canvas>
+        )}
       </div>
 
       <div className="container mx-auto px-4 relative z-10">

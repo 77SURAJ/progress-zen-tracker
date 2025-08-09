@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Sphere, MeshDistortMaterial, Text, Float } from "@react-three/drei";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -65,8 +65,12 @@ export function HeroSection() {
     offset: ["start start", "end start"]
   });
 
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => setIsClient(true), []);
+
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const opacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
+
 
   return (
     <section
@@ -76,27 +80,31 @@ export function HeroSection() {
     >
       {/* Background 3D Scene */}
       <div className="absolute inset-0 z-0">
-        <Canvas 
-          camera={{ position: [0, 0, 5], fov: 75 }}
-          gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
-          onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
-        >
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} intensity={1} />
-          <directionalLight position={[5, 5, 5]} intensity={0.5} />
-          
-          <AnimatedSphere />
-          <FloatingElements />
-          
-          <OrbitControls
-            enablePan={false}
-            enableZoom={false}
-            autoRotate
-            autoRotateSpeed={0.5}
-            enableDamping
-            dampingFactor={0.1}
-          />
-        </Canvas>
+        {isClient && (
+          <Canvas 
+            camera={{ position: [0, 0, 5], fov: 75 }}
+            gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
+            onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
+          >
+            <Suspense fallback={null}>
+              <ambientLight intensity={0.5} />
+              <pointLight position={[10, 10, 10]} intensity={1} />
+              <directionalLight position={[5, 5, 5]} intensity={0.5} />
+              
+              <AnimatedSphere />
+              <FloatingElements />
+              
+              <OrbitControls
+                enablePan={false}
+                enableZoom={false}
+                autoRotate
+                autoRotateSpeed={0.5}
+                enableDamping
+                dampingFactor={0.1}
+              />
+            </Suspense>
+          </Canvas>
+        )}
       </div>
 
       {/* Content */}
