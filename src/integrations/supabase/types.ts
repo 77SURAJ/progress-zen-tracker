@@ -14,6 +14,138 @@ export type Database = {
   }
   public: {
     Tables: {
+      animations: {
+        Row: {
+          created_at: string
+          glb_path: string | null
+          id: string
+          name: string | null
+          trigger: Json | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          glb_path?: string | null
+          id?: string
+          name?: string | null
+          trigger?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          glb_path?: string | null
+          id?: string
+          name?: string | null
+          trigger?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      daily_progress: {
+        Row: {
+          ai_insights: Json | null
+          bedtime: string | null
+          breakfast: Json | null
+          classes: Json | null
+          created_at: string
+          dinner: Json | null
+          entry_date: string
+          exercise_done: boolean | null
+          id: string
+          morning_salad: boolean | null
+          points_breakdown: Json | null
+          points_total: number | null
+          snack: Json | null
+          study_sessions: Json | null
+          updated_at: string
+          user_id: string
+          wake_3am: boolean | null
+          wake_time: string | null
+        }
+        Insert: {
+          ai_insights?: Json | null
+          bedtime?: string | null
+          breakfast?: Json | null
+          classes?: Json | null
+          created_at?: string
+          dinner?: Json | null
+          entry_date: string
+          exercise_done?: boolean | null
+          id?: string
+          morning_salad?: boolean | null
+          points_breakdown?: Json | null
+          points_total?: number | null
+          snack?: Json | null
+          study_sessions?: Json | null
+          updated_at?: string
+          user_id: string
+          wake_3am?: boolean | null
+          wake_time?: string | null
+        }
+        Update: {
+          ai_insights?: Json | null
+          bedtime?: string | null
+          breakfast?: Json | null
+          classes?: Json | null
+          created_at?: string
+          dinner?: Json | null
+          entry_date?: string
+          exercise_done?: boolean | null
+          id?: string
+          morning_salad?: boolean | null
+          points_breakdown?: Json | null
+          points_total?: number | null
+          snack?: Json | null
+          study_sessions?: Json | null
+          updated_at?: string
+          user_id?: string
+          wake_3am?: boolean | null
+          wake_time?: string | null
+        }
+        Relationships: []
+      }
+      meal_logs: {
+        Row: {
+          calories: number | null
+          created_at: string
+          entry_date: string | null
+          id: string
+          item: string | null
+          junk: boolean | null
+          meal_type: string | null
+          quantity: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          calories?: number | null
+          created_at?: string
+          entry_date?: string | null
+          id?: string
+          item?: string | null
+          junk?: boolean | null
+          meal_type?: string | null
+          quantity?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          calories?: number | null
+          created_at?: string
+          entry_date?: string | null
+          id?: string
+          item?: string | null
+          junk?: boolean | null
+          meal_type?: string | null
+          quantity?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       phone_verification_codes: {
         Row: {
           code: string
@@ -44,6 +176,27 @@ export type Database = {
         }
         Relationships: []
       }
+      points_config: {
+        Row: {
+          id: number
+          key: string | null
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          id?: number
+          key?: string | null
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          id?: number
+          key?: string | null
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -54,6 +207,7 @@ export type Database = {
           id: string
           phone: string | null
           phone_verified: boolean | null
+          timezone: string | null
           updated_at: string
           user_id: string
         }
@@ -66,6 +220,7 @@ export type Database = {
           id?: string
           phone?: string | null
           phone_verified?: boolean | null
+          timezone?: string | null
           updated_at?: string
           user_id: string
         }
@@ -78,6 +233,7 @@ export type Database = {
           id?: string
           phone?: string | null
           phone_verified?: boolean | null
+          timezone?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -117,6 +273,45 @@ export type Database = {
           id?: string
           progress_percentage?: number | null
           title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      study_logs: {
+        Row: {
+          completed: boolean | null
+          created_at: string
+          duration_minutes: number | null
+          end_ts: string | null
+          id: string
+          session_date: string
+          slot: string
+          start_ts: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string
+          duration_minutes?: number | null
+          end_ts?: string | null
+          id?: string
+          session_date: string
+          slot: string
+          start_ts?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string
+          duration_minutes?: number | null
+          end_ts?: string | null
+          id?: string
+          session_date?: string
+          slot?: string
+          start_ts?: string | null
           updated_at?: string
           user_id?: string
         }
