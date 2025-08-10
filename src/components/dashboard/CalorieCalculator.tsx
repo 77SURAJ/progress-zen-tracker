@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, X, Calculator } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { parseAndComputeCalories } from "@/services/ai";
 
 interface FoodItem {
   id: string;
@@ -56,20 +58,41 @@ const calculateCalories = (name: string, quantity: string): { calories: number; 
 };
 
 export function CalorieCalculator({ title, items, onItemsChange, showJunkDetection = false }: CalorieCalculatorProps) {
+  const { toast } = useToast();
   const [newItem, setNewItem] = useState({ name: '', quantity: '' });
+  const [loading, setLoading] = useState(false);
 
-  const addItem = () => {
-    if (newItem.name && newItem.quantity) {
-      const { calories, isJunk } = calculateCalories(newItem.name, newItem.quantity);
+  const addItem = async () => {
+    if (!newItem.name || !newItem.quantity) return;
+    setLoading(true);
+    try {
+      const text = `${newItem.quantity} ${newItem.name}`;
+      const result = await parseAndComputeCalories(text);
+      const top = result.items?.[0];
+      const calories = Math.round(top?.calories ?? result.total_calories ?? 0);
+      const isJunk = !!(showJunkDetection && (top?.junk || result.junk_incidents > 0));
+
       const item: FoodItem = {
         id: Date.now().toString(),
         name: newItem.name,
         quantity: newItem.quantity,
         calories,
-        isJunk: showJunkDetection ? isJunk : undefined
+        isJunk: showJunkDetection ? isJunk : undefined,
       };
       onItemsChange([...items, item]);
       setNewItem({ name: '', quantity: '' });
+    } catch (e: any) {
+      const { calories, isJunk } = calculateCalories(newItem.name, newItem.quantity);
+      onItemsChange([...items, {
+        id: Date.now().toString(),
+        name: newItem.name,
+        quantity: newItem.quantity,
+        calories,
+        isJunk: showJunkDetection ? isJunk : undefined,
+      }]);
+      toast({ title: "AI service unavailable", description: "Used local estimates for calories." });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -95,7 +118,7 @@ export function CalorieCalculator({ title, items, onItemsChange, showJunkDetecti
           onChange={(e) => setNewItem(prev => ({ ...prev, quantity: e.target.value }))}
           className="bg-secondary border-border w-24"
         />
-        <Button onClick={addItem} size="sm" className="bg-gradient-primary">
+        <Button onClick={addItem} size="sm" className="bg-gradient-primary" disabled={loading}>
           <Plus className="h-4 w-4" />
         </Button>
       </div>
