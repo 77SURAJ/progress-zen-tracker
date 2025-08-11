@@ -1,44 +1,12 @@
-import { useState, useEffect } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { HeroSection } from "@/components/marketing/HeroSection";
-import { FeaturesSection } from "@/components/marketing/FeaturesSection";
-import { ProductShowcase } from "@/components/marketing/ProductShowcase";
-import { TestimonialsSection } from "@/components/marketing/TestimonialsSection";
-import { PricingSection } from "@/components/marketing/PricingSection";
-import { CTASection } from "@/components/marketing/CTASection";
-import { Footer } from "@/components/marketing/Footer";
-import { Navigation } from "@/components/marketing/Navigation";
-import { ScrollProgress } from "@/components/marketing/ScrollProgress";
-import { ErrorBoundary } from "@/components/common/ErrorBoundary";
-const Index = () => {
-  const { scrollYProgress } = useScroll();
-  const [isLoaded, setIsLoaded] = useState(false);
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+export default function Index() {
+  const navigate = useNavigate();
 
   useEffect(() => {
-    setIsLoaded(true);
-  }, []);
+    navigate("/auth", { replace: true });
+  }, [navigate]);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-x-hidden">
-      <ScrollProgress />
-      <Navigation />
-      
-      <motion.main
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isLoaded ? 1 : 0 }}
-        transition={{ duration: 1 }}
-      >
-        <ErrorBoundary><HeroSection /></ErrorBoundary>
-        <ErrorBoundary><FeaturesSection /></ErrorBoundary>
-        <ErrorBoundary><ProductShowcase /></ErrorBoundary>
-        <ErrorBoundary><TestimonialsSection /></ErrorBoundary>
-        <ErrorBoundary><PricingSection /></ErrorBoundary>
-        <ErrorBoundary><CTASection /></ErrorBoundary>
-      </motion.main>
-      
-      <Footer />
-    </div>
-  );
-};
-
-export default Index;
+  return null;
+}

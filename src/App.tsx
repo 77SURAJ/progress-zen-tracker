@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { Suspense, lazy } from "react";
 const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Weekly = lazy(() => import("./pages/Weekly"));
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -18,13 +19,14 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Suspense fallback={null}><Dashboard /></Suspense>} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/dashboard" element={<Suspense fallback={null}><Dashboard /></Suspense>} />
+              <Route path="/weekly" element={<Suspense fallback={null}><Weekly /></Suspense>} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

@@ -5,7 +5,11 @@ import { CircularProgress } from "@/components/dashboard/CircularProgress";
 import { ProgressBar } from "@/components/dashboard/ProgressBar";
 import { MealsModule } from "@/components/dashboard/MealsModule";
 import { StudySessions } from "@/components/dashboard/StudySessions";
-import { JunkFood } from "@/components/dashboard/JunkFood";
+
+import { MorningRoutine } from "@/components/dashboard/MorningRoutine";
+import { Classes } from "@/components/dashboard/Classes";
+import { Exercise } from "@/components/dashboard/Exercise";
+import { Sleep } from "@/components/dashboard/Sleep";
 import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
@@ -29,11 +33,14 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold">Your Dashboard</h1>
           <p className="text-muted-foreground">Track, log, and visualize your day.</p>
         </div>
-        <Button onClick={recompute} variant="secondary">Recompute Score</Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline"><Link to="/weekly">Weekly Summary</Link></Button>
+          <Button onClick={recompute} variant="secondary">Recompute Score</Button>
+        </div>
       </header>
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="col-span-1 md:col-span-1">
+        <div className="col-span-1 md:col-span-1 space-y-6">
           <div className="rounded-xl border p-6 bg-card/40">
             <h3 className="font-semibold mb-3">Daily Score</h3>
             <CircularProgress value={Math.round(daily?.points_total ?? 0)} max={100} />
@@ -41,6 +48,7 @@ export default function Dashboard() {
               <ProgressBar value={Number(daily?.points_total ?? 0)} max={100} />
             </div>
           </div>
+          <MorningRoutine />
         </div>
         <div className="col-span-1 md:col-span-2">
           <MealsModule title="Breakfast" mealType="breakfast" />
@@ -48,8 +56,22 @@ export default function Dashboard() {
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <StudySessions title="Study Sessions" sessionCount={7} storageKey="studySessions" />
-        <JunkFood />
+        <StudySessions title="Study Sessions" sessionCount={3} storageKey="studySessionsDay" />
+        <Classes />
+      </section>
+
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <MealsModule title="Snack Break" mealType="snack" />
+        <Exercise />
+      </section>
+
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <MealsModule title="Dinner" mealType="dinner" />
+        <StudySessions title="Night Study" sessionCount={1} storageKey="nightStudy" />
+      </section>
+
+      <section>
+        <Sleep />
       </section>
     </main>
   );
