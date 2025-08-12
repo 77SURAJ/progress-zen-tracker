@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useNavigate } from 'react-router-dom';
 import { LogIn, UserPlus, Phone } from 'lucide-react';
@@ -18,9 +19,21 @@ export default function Auth() {
   const [phone, setPhone] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState<boolean>(() => {
+    try {
+      const v = localStorage.getItem('rememberMe');
+      return v ? JSON.parse(v) : true;
+    } catch {
+      return true;
+    }
+  });
   const { signIn, signUp, verifyPhone, sendPhoneVerification, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    localStorage.setItem('rememberMe', JSON.stringify(rememberMe));
+  }, [rememberMe]);
 
   React.useEffect(() => {
     if (user) {
@@ -140,6 +153,21 @@ export default function Auth() {
                         className="hatom-field"
                       />
                     </div>
+
+                    {mode === 'signin' && (
+                      <div className="flex items-center justify-between">
+                        <label htmlFor="remember" className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+                          <Checkbox
+                            id="remember"
+                            checked={rememberMe}
+                            onCheckedChange={(v) => setRememberMe(Boolean(v))}
+                          />
+                          Remember me
+                        </label>
+                        <span className="text-xs text-muted-foreground">Keeps you signed in</span>
+                      </div>
+                    )}
+
                   </>
                 )}
 
