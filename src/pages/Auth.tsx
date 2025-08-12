@@ -24,7 +24,7 @@ export default function Auth() {
 
   React.useEffect(() => {
     if (user) {
-      navigate('/');
+      navigate('/dashboard');
     }
   }, [user, navigate]);
 
@@ -36,7 +36,7 @@ export default function Auth() {
       if (mode === 'signin') {
         const { error } = await signIn(email, password);
         if (!error) {
-          navigate('/');
+          navigate('/dashboard');
         }
       } else if (mode === 'signup') {
         const { error } = await signUp(email, password, phone);
@@ -47,7 +47,7 @@ export default function Auth() {
       } else if (mode === 'verify-phone') {
         const { error } = await verifyPhone(phone, verificationCode);
         if (!error) {
-          navigate('/');
+          navigate('/dashboard');
         }
       }
     } finally {
