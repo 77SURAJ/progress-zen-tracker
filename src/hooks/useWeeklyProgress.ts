@@ -79,41 +79,50 @@ export const useWeeklyProgress = (weekOffset: number = 0) => {
 
       if (studyError) throw studyError;
 
-      // Aggregate data by date
-      const dailyMap = new Map(dailyData?.map(d => [d.entry_date, d]) || []);
+      // Create maps for efficient data lookup, with safe null handling
+      const dailyMap = new Map((dailyData || []).map(d => [d.entry_date, d]));
       const calorieMap = new Map<string, number>();
       const studyMap = new Map<string, number>();
 
-      // Sum calories by date
-      mealData?.forEach(meal => {
-        const current = calorieMap.get(meal.entry_date) || 0;
-        calorieMap.set(meal.entry_date, current + (Number(meal.calories) || 0));
+      // Sum calories by date, handling null/undefined values
+      (mealData || []).forEach(meal => {
+        if (meal.entry_date && meal.calories) {
+          const current = calorieMap.get(meal.entry_date) || 0;
+          const calories = typeof meal.calories === 'number' ? meal.calories : Number(meal.calories) || 0;
+          calorieMap.set(meal.entry_date, current + calories);
+        }
       });
 
-      // Count completed study sessions by date
-      studyData?.forEach(study => {
-        if (study.completed) {
+      // Count completed study sessions by date, handling null/undefined values
+      (studyData || []).forEach(study => {
+        if (study.session_date && study.completed === true) {
           const current = studyMap.get(study.session_date) || 0;
           studyMap.set(study.session_date, current + 1);
         }
       });
 
-      // Build weekly data array
+      // Build weekly data array with graceful handling of missing data
       const weeklyData: WeeklyData[] = weekDates.map((date, index) => {
         const dailyProgress = dailyMap.get(date);
-        const wakeTime = dailyProgress?.wake_time;
         
+        // Safely parse wake time, default to null if missing or invalid
         let wakeUp: number | null = null;
-        if (wakeTime) {
-          const wake = new Date(wakeTime);
-          wakeUp = wake.getHours() + wake.getMinutes() / 60;
+        try {
+          if (dailyProgress?.wake_time) {
+            const wake = new Date(dailyProgress.wake_time);
+            if (!isNaN(wake.getTime())) {
+              wakeUp = wake.getHours() + wake.getMinutes() / 60;
+            }
+          }
+        } catch (error) {
+          console.warn(`Invalid wake time for ${date}:`, dailyProgress?.wake_time);
         }
 
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const dayOfWeek = new Date(date).getDay();
+        const dayOfWeek = new Date(date + 'T00:00:00').getDay(); // Add time to avoid timezone issues
 
         return {
-          day: dayNames[dayOfWeek],
+          day: dayNames[dayOfWeek] || 'Day',
           date,
           wakeUp,
           calories: calorieMap.get(date) || 0,
@@ -122,25 +131,38 @@ export const useWeeklyProgress = (weekOffset: number = 0) => {
         };
       });
 
-      // Calculate stats
-      const validWakeUps = weeklyData.filter(d => d.wakeUp !== null && d.wakeUp <= 4); // Wake up by 4 AM is good
-      const wakeUpConsistency = weeklyData.length > 0 ? (validWakeUps.length / weeklyData.length) * 100 : 0;
+      // Calculate stats with robust null/undefined handling
+      const validWakeUps = weeklyData.filter(d => 
+        d.wakeUp !== null && 
+        !isNaN(d.wakeUp) && 
+        d.wakeUp <= 4
+      );
+      const wakeUpConsistency = weeklyData.length > 0 ? 
+        Math.round((validWakeUps.length / weeklyData.length) * 100) : 0;
 
-      const totalCalories = weeklyData.reduce((sum, d) => sum + d.calories, 0);
+      const totalCalories = weeklyData.reduce((sum, d) => {
+        const calories = typeof d.calories === 'number' && !isNaN(d.calories) ? d.calories : 0;
+        return sum + calories;
+      }, 0);
       const avgCaloriesPerDay = weeklyData.length > 0 ? Math.round(totalCalories / weeklyData.length) : 0;
 
-      const totalStudySessions = weeklyData.reduce((sum, d) => sum + d.studySessions, 0);
+      const totalStudySessions = weeklyData.reduce((sum, d) => {
+        const sessions = typeof d.studySessions === 'number' && !isNaN(d.studySessions) ? d.studySessions : 0;
+        return sum + sessions;
+      }, 0);
       const expectedSessions = weeklyData.length * 3; // 3 sessions per day expected
-      const studyCompletion = expectedSessions > 0 ? (totalStudySessions / expectedSessions) * 100 : 0;
+      const studyCompletion = expectedSessions > 0 ? 
+        Math.round((totalStudySessions / expectedSessions) * 100) : 0;
 
       const exerciseDays = weeklyData.filter(d => d.exercise === 1).length;
-      const exerciseAdherence = weeklyData.length > 0 ? (exerciseDays / weeklyData.length) * 100 : 0;
+      const exerciseAdherence = weeklyData.length > 0 ? 
+        Math.round((exerciseDays / weeklyData.length) * 100) : 0;
 
       const stats: WeeklyStats = {
-        wakeUpConsistency: Math.round(wakeUpConsistency),
-        avgCaloriesPerDay,
-        studyCompletion: Math.round(studyCompletion),
-        exerciseAdherence: Math.round(exerciseAdherence),
+        wakeUpConsistency: Math.max(0, Math.min(100, wakeUpConsistency)),
+        avgCaloriesPerDay: Math.max(0, avgCaloriesPerDay),
+        studyCompletion: Math.max(0, Math.min(100, studyCompletion)),
+        exerciseAdherence: Math.max(0, Math.min(100, exerciseAdherence)),
       };
 
       return { data: weeklyData, stats };

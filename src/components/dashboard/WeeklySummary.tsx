@@ -110,57 +110,83 @@ export function WeeklySummary() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <span className="ml-2 text-muted-foreground">Loading weekly data...</span>
           </div>
-        ) : weeklyData.length === 0 ? (
-          <div className="h-64 flex items-center justify-center text-muted-foreground">
-            No data available for this week. Start tracking your daily progress!
-          </div>
         ) : (
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              {config.type === 'line' ? (
+                <LineChart data={weeklyData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis 
+                    dataKey="day" 
+                    stroke="hsl(var(--muted-foreground))"
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    stroke="hsl(var(--muted-foreground))"
+                    tick={{ fontSize: 12 }}
+                    domain={config.dataKey === 'wakeUp' ? [0, 12] : ['dataMin - 1', 'dataMax + 1']}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '6px'
+                    }}
+                    formatter={(value, name) => {
+                      if (config.dataKey === 'wakeUp' && value === null) {
+                        return ['No data', name];
+                      }
+                      return [value, name];
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey={config.dataKey}
+                    stroke={config.color}
+                    strokeWidth={3}
+                    dot={{ fill: config.color, r: 6 }}
+                    activeDot={{ r: 8, stroke: config.color, strokeWidth: 2 }}
+                    connectNulls={false}
+                  />
+                </LineChart>
+              ) : (
+                <BarChart data={weeklyData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis 
+                    dataKey="day" 
+                    stroke="hsl(var(--muted-foreground))"
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    stroke="hsl(var(--muted-foreground))"
+                    tick={{ fontSize: 12 }}
+                    domain={[0, 'dataMax + 1']}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '6px'
+                    }}
+                  />
+                  <Bar
+                    dataKey={config.dataKey}
+                    fill={config.color}
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              )}
+            </ResponsiveContainer>
+          </div>
+        )}
 
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            {config.type === 'line' ? (
-              <LineChart data={weeklyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--background))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '6px'
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey={config.dataKey}
-                  stroke={config.color}
-                  strokeWidth={3}
-                  dot={{ fill: config.color, r: 6 }}
-                  activeDot={{ r: 8, stroke: config.color, strokeWidth: 2 }}
-                />
-              </LineChart>
-            ) : (
-              <BarChart data={weeklyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--background))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '6px'
-                  }}
-                />
-                <Bar
-                  dataKey={config.dataKey}
-                  fill={config.color}
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            )}
-          </ResponsiveContainer>
-        </div>
-
+        {/* Show helpful message when no data exists for the week */}
+        {!isLoading && weeklyData.every(d => d.calories === 0 && d.studySessions === 0 && d.exercise === 0 && d.wakeUp === null) && (
+          <div className="mt-4 p-4 bg-muted/50 rounded-lg text-center">
+            <p className="text-sm text-muted-foreground">
+              No activity data for this week yet. Start tracking your daily progress to see your trends!
+            </p>
+          </div>
         )}
 
         {stats && (
