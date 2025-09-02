@@ -2,23 +2,18 @@ import { useState } from "react";
 import { DashboardCard } from "./DashboardCard";
 import { Button } from "@/components/ui/button";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from "@/components/ui/simple-chart";
-import { BarChart3, TrendingUp } from "lucide-react";
-
-// Mock data for the week
-const weeklyData = [
-  { day: 'Mon', wakeUp: 3, calories: 1800, studySessions: 3, exercise: 1 },
-  { day: 'Tue', wakeUp: 3.5, calories: 2100, studySessions: 2, exercise: 0 },
-  { day: 'Wed', wakeUp: 3, calories: 1900, studySessions: 3, exercise: 1 },
-  { day: 'Thu', wakeUp: 4, calories: 2300, studySessions: 2, exercise: 1 },
-  { day: 'Fri', wakeUp: 3.5, calories: 2000, studySessions: 3, exercise: 0 },
-  { day: 'Sat', wakeUp: 5, calories: 2500, studySessions: 1, exercise: 1 },
-  { day: 'Sun', wakeUp: 4, calories: 2200, studySessions: 2, exercise: 1 },
-];
+import { BarChart3, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { useWeeklyProgress } from "@/hooks/useWeeklyProgress";
 
 type ChartType = 'wakeUp' | 'calories' | 'study' | 'exercise';
 
 export function WeeklySummary() {
   const [activeChart, setActiveChart] = useState<ChartType>('wakeUp');
+  const [weekOffset, setWeekOffset] = useState(0);
+  const { data: weeklyResult, isLoading, error } = useWeeklyProgress(weekOffset);
+  
+  const weeklyData = weeklyResult?.data || [];
+  const stats = weeklyResult?.stats;
 
   const chartConfig = {
     wakeUp: {
@@ -53,6 +48,20 @@ export function WeeklySummary() {
 
   const config = chartConfig[activeChart];
 
+  if (error) {
+    return (
+      <DashboardCard
+        title="Weekly Summary"
+        icon={<BarChart3 className="h-5 w-5 text-info" />}
+        className="col-span-full"
+      >
+        <div className="text-center py-8 text-destructive">
+          Failed to load weekly data. Please try again later.
+        </div>
+      </DashboardCard>
+    );
+  }
+
   return (
     <DashboardCard
       title="Weekly Summary"
@@ -60,19 +69,52 @@ export function WeeklySummary() {
       className="col-span-full"
     >
       <div className="space-y-4">
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(chartConfig).map(([key, { title }]) => (
+        <div className="flex items-center justify-between">
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(chartConfig).map(([key, { title }]) => (
+              <Button
+                key={key}
+                onClick={() => setActiveChart(key as ChartType)}
+                variant={activeChart === key ? "default" : "outline"}
+                size="sm"
+                className={activeChart === key ? "bg-gradient-primary" : ""}
+              >
+                {title}
+              </Button>
+            ))}
+          </div>
+          
+          <div className="flex items-center gap-2">
             <Button
-              key={key}
-              onClick={() => setActiveChart(key as ChartType)}
-              variant={activeChart === key ? "default" : "outline"}
+              onClick={() => setWeekOffset(prev => prev - 1)}
+              variant="outline"
               size="sm"
-              className={activeChart === key ? "bg-gradient-primary" : ""}
             >
-              {title}
+              <ChevronLeft className="h-4 w-4" />
             </Button>
-          ))}
+            <span className="text-sm text-muted-foreground px-2">
+              {weekOffset === 0 ? 'This Week' : `${Math.abs(weekOffset)} week${Math.abs(weekOffset) > 1 ? 's' : ''} ${weekOffset < 0 ? 'ago' : 'ahead'}`}
+            </span>
+            <Button
+              onClick={() => setWeekOffset(prev => prev + 1)}
+              variant="outline"
+              size="sm"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
+
+        {isLoading ? (
+          <div className="h-64 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2 text-muted-foreground">Loading weekly data...</span>
+          </div>
+        ) : weeklyData.length === 0 ? (
+          <div className="h-64 flex items-center justify-center text-muted-foreground">
+            No data available for this week. Start tracking your daily progress!
+          </div>
+        ) : (
 
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -119,24 +161,28 @@ export function WeeklySummary() {
           </ResponsiveContainer>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-border">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-success">85%</div>
-            <div className="text-sm text-muted-foreground">Wake-up Consistency</div>
+        )}
+
+        {stats && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-border">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-success">{stats.wakeUpConsistency}%</div>
+              <div className="text-sm text-muted-foreground">Wake-up Consistency</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-info">{stats.avgCaloriesPerDay.toLocaleString()}</div>
+              <div className="text-sm text-muted-foreground">Avg Calories/Day</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-warning">{stats.studyCompletion}%</div>
+              <div className="text-sm text-muted-foreground">Study Completion</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{stats.exerciseAdherence}%</div>
+              <div className="text-sm text-muted-foreground">Exercise Adherence</div>
+            </div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-info">2,114</div>
-            <div className="text-sm text-muted-foreground">Avg Calories/Day</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-warning">71%</div>
-            <div className="text-sm text-muted-foreground">Study Completion</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary">71%</div>
-            <div className="text-sm text-muted-foreground">Exercise Adherence</div>
-          </div>
-        </div>
+        )}
       </div>
     </DashboardCard>
   );

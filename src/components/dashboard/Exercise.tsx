@@ -1,10 +1,11 @@
 import { DashboardCard } from "./DashboardCard";
 import { AnimatedToggle } from "./AnimatedToggle";
 import { Dumbbell } from "lucide-react";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useDailyProgressSync } from "@/hooks/useDailyProgressSync";
 
 export function Exercise() {
-  const [exerciseDone, setExerciseDone] = useLocalStorage('exerciseDone', false);
+  const { dailyProgress, updateField } = useDailyProgressSync();
+  const exerciseDone = dailyProgress?.exercise_done || false;
 
   return (
     <DashboardCard
@@ -15,7 +16,7 @@ export function Exercise() {
       <div className="space-y-4">
         <AnimatedToggle
           checked={exerciseDone}
-          onCheckedChange={setExerciseDone}
+          onCheckedChange={(checked) => updateField('exercise_done', checked)}
           label="Exercise completed today"
         />
         

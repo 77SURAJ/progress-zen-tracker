@@ -3,6 +3,7 @@ import { SettingsModal } from "./SettingsModal";
 import { Checkbox } from "@/components/ui/checkbox";
 import { GraduationCap } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useDailyProgressSync } from "@/hooks/useDailyProgressSync";
 
 interface ClassItem {
   id: string;
@@ -28,17 +29,34 @@ const defaultClasses: ClassItem[] = [
 ];
 
 export function Classes() {
-  const [classes, setClasses] = useLocalStorage<ClassItem[]>('classes', defaultClasses);
+  const { dailyProgress, updateField } = useDailyProgressSync();
   const [customSubjects] = useLocalStorage<Subject[]>('customSubjects', []);
   
-  // Use custom subjects if available, otherwise use default classes
+  // Get current classes from daily_progress or use defaults
+  const savedClasses: ClassItem[] = (() => {
+    if (!dailyProgress?.classes || !Array.isArray(dailyProgress.classes)) {
+      return defaultClasses;
+    }
+    try {
+      // Validate that the data matches ClassItem structure
+      const classes = dailyProgress.classes as unknown as ClassItem[];
+      if (classes.every(c => c && typeof c.id === 'string' && typeof c.name === 'string' && typeof c.attended === 'boolean')) {
+        return classes;
+      }
+    } catch {
+      // Fall back to defaults if parsing fails
+    }
+    return defaultClasses;
+  })();
+  
+  // Use custom subjects if available, otherwise use saved/default classes
   const currentSubjects = customSubjects.length > 0 
     ? customSubjects.map(subject => ({
         id: subject.id,
         name: subject.name,
-        attended: classes.find(c => c.name === subject.name)?.attended || false
+        attended: savedClasses.find(c => c.name === subject.name)?.attended || false
       }))
-    : classes;
+    : savedClasses;
 
   const toggleAttendance = (id: string) => {
     const updatedClasses = currentSubjects.map(classItem => 
@@ -46,7 +64,7 @@ export function Classes() {
         ? { ...classItem, attended: !classItem.attended }
         : classItem
     );
-    setClasses(updatedClasses);
+    updateField('classes', updatedClasses);
   };
 
   const attendedCount = currentSubjects.filter(cls => cls.attended).length;

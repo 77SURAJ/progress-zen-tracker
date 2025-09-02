@@ -4,7 +4,10 @@ import { ProgressBar } from "./ProgressBar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BookOpen, Play, Square } from "lucide-react";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { startStudySession, endStudySession } from "@/services/api";
+import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 
 interface StudySessionConfig {
@@ -19,6 +22,7 @@ interface StudySession {
   startTime?: string;
   endTime?: string;
   isActive: boolean;
+  dbId?: string;
 }
 
 interface StudySessionsProps {
@@ -28,7 +32,12 @@ interface StudySessionsProps {
 }
 
 export function StudySessions({ title, sessionCount, storageKey }: StudySessionsProps) {
-  const [studyConfig] = useLocalStorage<StudySessionConfig>('studyConfig', {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const qc = useQueryClient();
+  const today = new Date().toISOString().slice(0, 10);
+  
+  const [studyConfig] = useState<StudySessionConfig>({
     sessionCount: 3,
     sessionDuration: 80,
     pointsPerSession: 8
@@ -38,7 +47,7 @@ export function StudySessions({ title, sessionCount, storageKey }: StudySessions
   const actualSessionCount = sessionCount || studyConfig.sessionCount;
   const sessionDuration = studyConfig.sessionDuration;
   
-  const [sessions, setSessions] = useLocalStorage<StudySession[]>(storageKey, 
+  const [sessions, setSessions] = useState<StudySession[]>(
     Array.from({ length: actualSessionCount }, (_, i) => ({
       id: `${storageKey}-${i}`,
       completed: false,
@@ -69,25 +78,50 @@ export function StudySessions({ title, sessionCount, storageKey }: StudySessions
     ));
   };
 
-  const startSession = (id: string) => {
-    setSessions(sessions.map(session => 
-      session.id === id 
-        ? { ...session, isActive: true, startTime: new Date().toLocaleTimeString() }
-        : { ...session, isActive: false }
-    ));
+  const startSession = async (id: string) => {
+    if (!user) return;
+    
+    try {
+      const sessionId = await startStudySession({
+        userId: user.id,
+        date: today,
+        slot: id
+      });
+
+      setSessions(sessions.map(session => 
+        session.id === id 
+          ? { ...session, isActive: true, startTime: new Date().toLocaleTimeString(), dbId: sessionId }
+          : { ...session, isActive: false }
+      ));
+    } catch (error: any) {
+      toast({ title: "Failed to start session", description: error.message, variant: "destructive" });
+    }
   };
 
-  const stopSession = (id: string) => {
-    setSessions(sessions.map(session => 
-      session.id === id 
-        ? { 
-            ...session, 
-            isActive: false, 
-            endTime: new Date().toLocaleTimeString(),
-            completed: true 
-          }
-        : session
-    ));
+  const stopSession = async (id: string) => {
+    const session = sessions.find(s => s.id === id);
+    if (!session?.dbId) return;
+
+    try {
+      await endStudySession({ id: session.dbId });
+      
+      setSessions(sessions.map(s => 
+        s.id === id 
+          ? { 
+              ...s, 
+              isActive: false, 
+              endTime: new Date().toLocaleTimeString(),
+              completed: true 
+            }
+          : s
+      ));
+
+      // Trigger recompute and refresh weekly data
+      qc.invalidateQueries({ queryKey: ["daily_progress"] });
+      qc.invalidateQueries({ queryKey: ["weekly_progress"] });
+    } catch (error: any) {
+      toast({ title: "Failed to stop session", description: error.message, variant: "destructive" });
+    }
   };
 
   return (

@@ -1,11 +1,16 @@
 import { DashboardCard } from "./DashboardCard";
 import { Input } from "@/components/ui/input";
 import { Moon } from "lucide-react";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useDailyProgressSync } from "@/hooks/useDailyProgressSync";
 
 export function Sleep() {
-  const [bedtime, setBedtime] = useLocalStorage('bedtime', '');
-  const [wakeupTime, setWakeupTime] = useLocalStorage('wakeupTime', '');
+  const { dailyProgress, updateSleepTimes } = useDailyProgressSync();
+  
+  // Convert ISO strings back to time format for inputs
+  const bedtime = dailyProgress?.bedtime ? 
+    new Date(dailyProgress.bedtime).toTimeString().slice(0, 5) : '';
+  const wakeupTime = dailyProgress?.wake_time ? 
+    new Date(dailyProgress.wake_time).toTimeString().slice(0, 5) : '';
 
   const isCompleted = bedtime !== '' && wakeupTime !== '';
 
@@ -39,7 +44,7 @@ export function Sleep() {
             <Input
               type="time"
               value={bedtime}
-              onChange={(e) => setBedtime(e.target.value)}
+              onChange={(e) => updateSleepTimes(e.target.value, undefined)}
               className="bg-secondary border-border"
             />
           </div>
@@ -49,7 +54,7 @@ export function Sleep() {
             <Input
               type="time"
               value={wakeupTime}
-              onChange={(e) => setWakeupTime(e.target.value)}
+              onChange={(e) => updateSleepTimes(undefined, e.target.value)}
               className="bg-secondary border-border"
             />
           </div>
