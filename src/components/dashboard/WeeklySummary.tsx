@@ -55,8 +55,46 @@ export function WeeklySummary() {
         icon={<BarChart3 className="h-5 w-5 text-info" />}
         className="col-span-full"
       >
-        <div className="text-center py-8 text-destructive">
-          Failed to load weekly data. Please try again later.
+        <div className="space-y-4 py-8">
+          <div className="text-center">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h3 className="text-lg font-semibold text-destructive mb-2">
+              Failed to load weekly data
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              We couldn't fetch your weekly progress at this moment.
+            </p>
+          </div>
+          
+          <div className="bg-muted/50 rounded-lg p-4 text-sm">
+            <p className="font-medium mb-2">Possible reasons:</p>
+            <ul className="space-y-1 text-muted-foreground">
+              <li>• Network issue (check your internet connection)</li>
+              <li>• Server is temporarily unavailable</li>
+              <li>• Data source returned incomplete or invalid values</li>
+            </ul>
+          </div>
+
+          <div className="bg-muted/50 rounded-lg p-4 text-sm">
+            <p className="font-medium mb-2">👉 What happens now:</p>
+            <ul className="space-y-1 text-muted-foreground">
+              <li>• If some data is missing → those days will show as <strong>0</strong> in the graph</li>
+              <li>• If no data is available for the whole week → this error will be shown</li>
+            </ul>
+          </div>
+
+          <div className="text-center pt-4">
+            <Button 
+              onClick={() => window.location.reload()} 
+              variant="outline"
+              className="mr-2"
+            >
+              Try Again
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2">
+              Please try again later if the issue persists.
+            </p>
+          </div>
         </div>
       </DashboardCard>
     );
